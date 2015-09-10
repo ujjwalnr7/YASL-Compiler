@@ -7,7 +7,7 @@ package csc426;
  * redundant, but for identifiers and numbers it specifies which particular one
  * it is).
  * 
- * @author bhoward
+ * @author Ujjwal Nair
  */
 public class Token {
 	/**
@@ -28,7 +28,7 @@ public class Token {
 	// Override the default toString() for use in development and debugging.
 	public String toString() {
 		StringBuilder result = new StringBuilder(type.toString());
-		if (lexeme != null) {
+		if (type == TokenType.NUM || type == TokenType.ID) {
 			result.append(" ").append(lexeme);
 		}
 		result.append(" ").append(line).append(":").append(column);

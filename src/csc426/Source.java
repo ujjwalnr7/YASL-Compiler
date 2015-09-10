@@ -9,7 +9,8 @@ import java.io.Reader;
  * ability to track the current line and column number, and to examine the
  * current character multiple times.
  * 
- * @author bhoward
+ * @author 
+ * Provided as Part of Project Skeleton
  */
 public class Source {
 	/**

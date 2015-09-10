@@ -10,7 +10,7 @@ import java.io.Reader;
  * around a FileReader or InputStreamReader (though for testing it may also be
  * simply a StringReader).
  * 
- * @author bhoward
+ * @author Ujjwal Nair
  */
 public class Scanner {
 	/**
@@ -29,17 +29,20 @@ public class Scanner {
 	 * @return the next Token object
 	 */
 	public Token next() {
-		// TODO implement the state machine here:
-		// - have a "state" variable start in the initial state
-		// - repeatedly look at source.current (the current character),
-		//   perform an appropriate action based on them, and assign
-		//   a new state until the end of a token is seen
-		// - call source.advance() on each state transition, until you
-		//   see the first character after the token
-		// - if source.atEOF is true, then return an EOF token:
-		//     new Token(source.line, source.column, TokenType.EOF, null)
+		State state = State.INITIAL_STATE;
 		
-		return null; // TODO replace this with an actual Token object
+		while (true) {
+			state = state.step(source);
+			if (state.done()) {
+				break;
+			}
+			
+			// Only advance if end of token not yet seen
+			source.advance();
+		}
+
+		return state.token();
+
 	}
 
 	/**

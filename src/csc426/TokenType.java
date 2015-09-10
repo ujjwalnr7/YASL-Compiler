@@ -12,9 +12,14 @@ public enum TokenType {
 	MINUS, // minus operator (-)
 	STAR, // times operator (*)
 	ASSIGN, //equals operator (=)
-	DIV, // division operator (/)
-	MOD, // modulus operator (%)
+	DIV, // DIV Keyword
+	MOD, //  MOD Keyword
 	PERIOD, // period (.)
+	PROGRAM, // Keyword Program
+	CONST, // Keyword Const
+	BEGIN, // Keyword Begin
+	PRINT, // Keyword Print
+	END, // Keyword End
+	ID, // Identifier
 	EOF // end-of-file
-	// TODO add more token types here
 }
