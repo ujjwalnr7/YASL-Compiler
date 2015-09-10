@@ -345,6 +345,7 @@ class OpenCommaState extends State{
 		}
 	}
 
+	// this is a comment
 	public boolean done() 
 	{
 		return false;
