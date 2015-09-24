@@ -28,7 +28,7 @@ public class Token {
 	// Override the default toString() for use in development and debugging.
 	public String toString() {
 		StringBuilder result = new StringBuilder(type.toString());
-		if (type == TokenType.NUM || type == TokenType.ID) {
+		if (this.type == TokenType.NUM || this.type == TokenType.ID) {
 			result.append(" ").append(lexeme);
 		}
 		result.append(" ").append(line).append(":").append(column);
