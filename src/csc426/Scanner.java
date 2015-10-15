@@ -18,7 +18,8 @@ public class Scanner {
 	 * 
 	 * @param in
 	 */
-	public Scanner(Reader in) {
+	public Scanner(Reader in) throws IOException
+	{
 		source = new Source(in);
 	}
 
@@ -28,7 +29,8 @@ public class Scanner {
 	 * 
 	 * @return the next Token object
 	 */
-	public Token next() {
+	public Token next() throws IOException
+	{
 		State state = State.INITIAL_STATE;
 		
 		while (true) {

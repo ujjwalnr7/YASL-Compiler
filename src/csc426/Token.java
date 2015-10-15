@@ -18,24 +18,23 @@ public class Token {
 	 * @param type the TokenType of the token
 	 * @param lexeme the string value of the token
 	 */
-	public Token(int line, int column, TokenType type, String lexeme) {
-		this.line = line;
-		this.column = column;
+	public Token(Position position, TokenType type, String lexeme) {
+		this.position = position;
 		this.type = type;
 		this.lexeme = lexeme;
 	}
 
 	// Override the default toString() for use in development and debugging.
 	public String toString() {
-		StringBuilder result = new StringBuilder(type.toString());
-		if (this.type == TokenType.NUM || this.type == TokenType.ID) {
-			result.append(" ").append(lexeme);
-		}
-		result.append(" ").append(line).append(":").append(column);
-		return result.toString();
-	}
+        StringBuilder result = new StringBuilder(this.type.toString());
+        if (this.type == TokenType.ID || this.type == TokenType.NUM || this.type == TokenType.STRING) {
+            result.append(" ").append(this.lexeme);
+        }
+        result.append(" ").append(this.position);
+        return result.toString();
+    }
 
-	public final int line, column;
+	public final Position position;
 	public final TokenType type;
 	public final String lexeme;
 }

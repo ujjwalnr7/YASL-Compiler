@@ -41,129 +41,144 @@ public abstract class State {
 	 * A String containing all of the characters that may start an operator or
 	 * punctuation.
 	 */	
-	protected static final String OPCHARS = ";.+-*=";
+	protected static final String OPCHARS = "+-*;.:(),";
 	
 	/**
 	 * A Map from lexeme to the corresponding TokenType, for all of the
 	 * "fixed lexeme" tokens.
 	 */
-	protected static Map<String, TokenType> tokenMap;
+	protected static Map<String, TokenType> tokenMap = new HashMap<String, TokenType>();
 
 	// load tokens with fixed lexemes into tokenMap
 	static {
-		tokenMap = new HashMap<String, TokenType>();
-		tokenMap.put("+", TokenType.PLUS);
-		tokenMap.put("-", TokenType.MINUS);
-		tokenMap.put("*", TokenType.STAR);
-		tokenMap.put(";", TokenType.SEMI);
-		tokenMap.put(".", TokenType.PERIOD);
-		tokenMap.put("=", TokenType.ASSIGN);	
-		tokenMap.put("print", TokenType.PRINT);
-		tokenMap.put("const", TokenType.CONST);
-		tokenMap.put("begin", TokenType.BEGIN);
-		tokenMap.put("end", TokenType.END);
-		tokenMap.put("div", TokenType.DIV);
-		tokenMap.put("mod", TokenType.MOD);
-		tokenMap.put("program", TokenType.PROGRAM);
-		tokenMap.put("id", TokenType.ID);
+			tokenMap.put("program", TokenType.PROGRAM);
+	        tokenMap.put("const", TokenType.CONST);
+	        tokenMap.put("begin", TokenType.BEGIN);
+	        tokenMap.put("print", TokenType.PRINT);
+	        tokenMap.put("end", TokenType.END);
+	        tokenMap.put("div", TokenType.DIV);
+	        tokenMap.put("mod", TokenType.MOD);
+	        tokenMap.put("var", TokenType.VAR);
+	        tokenMap.put("int", TokenType.INT);
+	        tokenMap.put("bool", TokenType.BOOL);
+	        tokenMap.put("proc", TokenType.PROC);
+	        tokenMap.put("if", TokenType.IF);
+	        tokenMap.put("then", TokenType.THEN);
+	        tokenMap.put("else", TokenType.ELSE);
+	        tokenMap.put("while", TokenType.WHILE);
+	        tokenMap.put("do", TokenType.DO);
+	        tokenMap.put("prompt", TokenType.PROMPT);
+	        tokenMap.put("and", TokenType.AND);
+	        tokenMap.put("or", TokenType.OR);
+	        tokenMap.put("not", TokenType.NOT);
+	        tokenMap.put("true", TokenType.TRUE);
+	        tokenMap.put("false", TokenType.FALSE);
+	        tokenMap.put("+", TokenType.PLUS);
+	        tokenMap.put("-", TokenType.MINUS);
+	        tokenMap.put("*", TokenType.STAR);
+	        tokenMap.put("=", TokenType.ASSIGN);
+	        tokenMap.put("==", TokenType.EQUAL);
+	        tokenMap.put("<>", TokenType.NOTEQUAL);
+	        tokenMap.put("<=", TokenType.LESSEQUAL);
+	        tokenMap.put(">=", TokenType.GREATEREQUAL);
+	        tokenMap.put("<", TokenType.LESS);
+	        tokenMap.put(">", TokenType.GREATER);
+	        tokenMap.put(";", TokenType.SEMI);
+	        tokenMap.put(".", TokenType.PERIOD);
+	        tokenMap.put(":", TokenType.COLON);
+	        tokenMap.put("(", TokenType.LPAREN);
+	        tokenMap.put(")", TokenType.RPAREN);
+	        tokenMap.put(",", TokenType.COMMA);
+
 	}
 	
 }
 
-class InitialState extends State{
+class InitialState extends State 
+{
+    InitialState() {}
 
-	@Override
-	public State step(Source source) {
-		if (source.atEOF)
-		{
-			return new FinalState(source.line, source.column, "<EOF>", TokenType.EOF);
-		}
-		
-		else if(source.current == '0')
-		{
-			return new ZeroState(source);
-		}
-		
-		else if (Character.isDigit(source.current))
-		{
-			return new NumState(source);
-		}
-		
-		else if (OPCHARS.indexOf(source.current) >= 0)
-		{
-			return new OpState(source);
-		}
-		
-		else if (Character.isWhitespace(source.current))
-		{
-			return INITIAL_STATE;
-		}
-		
-		else if (Character.isAlphabetic(source.current))
-		{
-			return new IdentState(source);
-		}
-		
-		else if(source.current == '/')
-		{
-			return new SlashState(source);
-		}
-		
-		else if(source.current == '{')
-		{
-			return new OpenCommaState(source);
-		}
-		
-		
-		else
-		{
-			System.err.print("Error: Unexpected character (" + source.current + ") ");
-			System.err.println("at line " + source.line + ", column " + source.column);
-			return INITIAL_STATE;
-		}
-		
-	}
-	
+    @Override
+    public State step(Source source) {
+        if (source.atEOF()) {
+            return new FinalState(source.position(), "<EOF>", TokenType.EOF);
+        }
+        if (Character.isLetter(source.current())) {
+            return new IdentState(source);
+        }
+        if (source.current() == '0') {
+            return new ZeroState(source);
+        }
+        if (Character.isDigit(source.current())) {
+            return new NumState(source);
+        }
+        if ("+-*;.:(),".indexOf(source.current()) >= 0) {
+            return new OpState(source);
+        }
+        if (source.current() == '=') {
+            return new EqualState(source);
+        }
+        if (source.current() == '<') {
+            return new LessState(source);
+        }
+        if (source.current() == '>') {
+            return new GreaterState(source);
+        }
+        if (Character.isWhitespace(source.current())) {
+            return INITIAL_STATE;
+        }
+        if (source.current() == '/') {
+            return new SlashState(source);
+        }
+        if (source.current() == '{') {
+            return new BraceState(source);
+        }
+        if (source.current() == '\"') {
+            return new QuoteState(source);
+        }
+        System.err.print("Error: Unexpected character (" + source.current() + ") ");
+        System.err.println("at " + source.position());
+        return INITIAL_STATE;
+    }
 }
 
 
-class FinalState extends State {
-	public FinalState(int line, int column, String lexeme, TokenType type) {
-		this.token = new Token(line, column, type, lexeme);
-	}
-	
-	/**
-	 * There should be no reason for this to be called
-	 */
-	public State step(Source source) {
-		return null;
-	}
 
-	@Override
-	public boolean done() {
-		return true;
-	}
+class FinalState extends State 
+{
+    private Token token;
 
-	@Override
-	public Token token() {
-		return token;
-	}
+    public FinalState(Position position, String lexeme, TokenType type) {
+        this.token = new Token(position, type, lexeme);
+    }
 
-	private Token token;
+    @Override
+    public State step(Source source) {
+        return null;
+    }
+
+    @Override
+    public boolean done() {
+        return true;
+    }
+
+    @Override
+    public Token token() {
+        return this.token;
+    }
 }
 
-abstract class MarkState extends State{
-	public MarkState(Source source) 
-	{
-		this.line = source.line;
-		this.column = source.column;
-		this.buffer = new StringBuilder();
-		buffer.append(source.current);
-	}
 
-	protected int line, column;
-	protected StringBuilder buffer;
-	
+abstract class MarkState extends State 
+{
+    protected Position position;
+    protected StringBuilder buffer;
+
+    public MarkState(Source source) {
+        this.position = source.position();
+        this.buffer = new StringBuilder();
+        this.buffer.append(source.current());
+    }
 }
 
 /**
@@ -171,58 +186,39 @@ abstract class MarkState extends State{
  * is reused while the token is read; the "state" changes by appending
  * characters to the lexeme buffer.
  */
-class NumState extends MarkState {
-	public NumState(Source source) 
-	{
-		super(source);
-	}
+class NumState extends MarkState 
+{
+    public NumState(Source source) {
+        super(source);
+    }
 
-	public State step(Source source) 
-	{
-		if (Character.isDigit(source.current)) 
-		{
-			buffer.append(source.current);
-			return this;
-		} 
-		else 
-		{
-			return new FinalState(line, column, buffer.toString(), TokenType.NUM);
-		}
-	}
+    @Override
+    public State step(Source source) {
+        if (!source.atEOF() && Character.isDigit(source.current())) {
+            this.buffer.append(source.current());
+            return this;
+        }
+        return new FinalState(this.position, this.buffer.toString(), TokenType.NUM);
+    }
 }
 
-class IdentState extends MarkState{
-	public IdentState(Source source)
-	{
-		super(source);
-	}
-	
-	public State step(Source source)
-	{
-		if (Character.isLetter(source.current) || Character.isDigit(source.current))
-		{
-			buffer.append(source.current);
-			return this;
-		}
-		
-		else
-		{
-			String anything = buffer.toString();
-			if (((anything).equals("program")) || ((anything).equals("const")) ||((anything).equals("begin")) ||((anything).equals("print")) ||((anything).equals("div")) ||((anything).equals("mod")) || ((anything).equals("end")))
-			{
-				TokenType type = tokenMap.get(anything);
-				return new FinalState(line, column, anything, type);
-			}
-			
-			else
-			{
-				String id = "id";
-				TokenType type = tokenMap.get(id);
-				return new FinalState(line, column, anything, type);
-			}
-		}
-	}
-	
+
+class IdentState extends MarkState 
+{
+    public IdentState(Source source) {
+        super(source);
+    }
+
+    @Override
+    public State step(Source source) {
+        if (!source.atEOF() && Character.isLetterOrDigit(source.current())) {
+            this.buffer.append(source.current());
+            return this;
+        }
+        String lexeme = this.buffer.toString();
+        TokenType type = tokenMap.containsKey(lexeme) ? (TokenType)tokenMap.get(lexeme) : TokenType.ID;
+        return new FinalState(this.position, lexeme, type);
+    }
 }
 
 
@@ -231,34 +227,38 @@ class IdentState extends MarkState{
  * The state while recognizing a zero integer literal (since no other literals
  * may start with a leading zero).
  */
-class ZeroState extends MarkState {
-	public ZeroState(Source source) {
-		super(source);
-	}
+class ZeroState extends MarkState 
+{
+    public ZeroState(Source source) {
+        super(source);
+    }
 
-	public State step(Source source) {
-		return new FinalState(line, column, buffer.toString(), TokenType.NUM);
-	}
+    @Override
+    public State step(Source source) {
+        return new FinalState(this.position, this.buffer.toString(), TokenType.NUM);
+    }
 }
+
 
 /**
  * The state while recognizing an operator or punctuation. Currently, all of
  * these are single-character tokens, but it may be extended along the lines of
  * IdentState or NumState to handle multiple characters.
  */
-class OpState extends MarkState {
-	public OpState(Source source) 
-	{
-		super(source);
-	}
+class OpState extends MarkState 
+{
+    public OpState(Source source) {
+        super(source);
+    }
 
-	public State step(Source source) {
-		String lexeme = buffer.toString();
-		TokenType type = tokenMap.get(lexeme);
-
-		return new FinalState(line, column, lexeme, type);
-	}
+    @Override
+    public State step(Source source) {
+        String lexeme = this.buffer.toString();
+        TokenType type = (TokenType)tokenMap.get(lexeme);
+        return new FinalState(this.position, lexeme, type);
+    }
 }
+
 
 /**
  * The state while starting to recognize an end-of-line comment, starting with
@@ -352,5 +352,178 @@ class OpenCommaState extends State{
 	
 	private int line, column;
 }
+
+
+class BraceState extends State {
+    private Position position;
+
+    public BraceState(Source source) {
+        this.position = source.position();
+    }
+
+    @Override
+    public State step(Source source) {
+        if (source.atEOF()) {
+            System.err.print("Error: Unclosed comment ");
+            System.err.println("at " + this.position);
+            return INITIAL_STATE;
+        }
+        if (source.current() == '}') {
+            return INITIAL_STATE;
+        }
+        return this;
+    }
+
+    @Override
+    public boolean done() {
+        return false;
+    }
+}
+
+class QuoteState extends MarkState {
+    public QuoteState(Source source) {
+        super(source);
+    }
+
+    @Override
+    public State step(Source source) {
+        if (source.atEOF()) {
+            System.err.print("Error: Unclosed string literal ");
+            System.err.println("at " + this.position);
+            return INITIAL_STATE;
+        }
+        if (source.current() == '\"') {
+            return new Quote2State(this);
+        }
+        this.buffer.append(source.current());
+        return this;
+    }
+}
+
+class Quote2State extends State {
+    private QuoteState parent;
+
+    public Quote2State(QuoteState parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public State step(Source source) {
+        if (source.atEOF() || source.current() != '\"') {
+            String lexeme = this.parent.buffer.substring(1);
+            return new FinalState(this.parent.position, lexeme, TokenType.STRING);
+        }
+        this.parent.buffer.append(source.current());
+        return this.parent;
+    }
+}
+
+class EqualState
+extends MarkState {
+    public EqualState(Source source) {
+        super(source);
+    }
+
+    @Override
+    public State step(Source source) {
+        if (!(source.atEOF() || source.current() != '=')) {
+            return new EqualEqualState(this.position);
+        }
+        return new FinalState(this.position, "=", TokenType.ASSIGN);
+    }
+}
+
+class EqualEqualState
+extends State {
+    private Position position;
+
+    public EqualEqualState(Position position) {
+        this.position = position;
+    }
+
+    @Override
+    public State step(Source source) {
+        return new FinalState(this.position, "==", TokenType.EQUAL);
+    }
+}
+
+
+class GreaterState
+extends MarkState {
+    public GreaterState(Source source) {
+        super(source);
+    }
+
+    @Override
+    public State step(Source source) {
+        if (!(source.atEOF() || source.current() != '=')) {
+            return new GreaterEqualState(this.position);
+        }
+        return new FinalState(this.position, ">", TokenType.GREATER);
+    }
+}
+
+class GreaterEqualState
+extends State {
+    private Position position;
+
+    public GreaterEqualState(Position position) {
+        this.position = position;
+    }
+
+    @Override
+    public State step(Source source) {
+        return new FinalState(this.position, ">=", TokenType.GREATEREQUAL);
+    }
+}
+
+class LessState
+extends MarkState {
+    public LessState(Source source) {
+        super(source);
+    }
+
+    @Override
+    public State step(Source source) {
+        if (!(source.atEOF() || source.current() != '=')) {
+            return new LessEqualState(this.position);
+        }
+        if (!(source.atEOF() || source.current() != '>')) {
+            return new LessGreaterState(this.position);
+        }
+        return new FinalState(this.position, "<", TokenType.LESS);
+    }
+}
+
+
+class LessEqualState
+extends State {
+    private Position position;
+
+    public LessEqualState(Position position) {
+        this.position = position;
+    }
+
+    @Override
+    public State step(Source source) {
+        return new FinalState(this.position, "<=", TokenType.LESSEQUAL);
+    }
+}
+
+class LessGreaterState
+extends State {
+    private Position position;
+
+    public LessGreaterState(Position position) {
+        this.position = position;
+    }
+
+    @Override
+    public State step(Source source) {
+        return new FinalState(this.position, "<>", TokenType.NOTEQUAL);
+    }
+}
+
+
 
 
