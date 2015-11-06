@@ -1,59 +1,77 @@
 package util;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class SymbolTable<T> {
-	private Stack<Map<String, T>> scopes;
+import csc426.interpreter.IntValue;
+import csc426.interpreter.InterpreterException;
+import csc426.interpreter.Value;
 
-	public SymbolTable() {
-		scopes = new Stack<>();
+public class SymbolTable {
+	Stack<Map<String,Value>> stack;
+	
+	// Create a new table
+	public SymbolTable(){
+		stack = new Stack<Map<String,Value>>();
 	}
-
-	/**
-	 * Push a new local scope on top of this table.
-	 */
-	public void enter() {
-		scopes.push(new HashMap<String, T>());
+	
+	// Enter a new scope
+	public void enter(){
+		Map<String,Value> newMap = new HashMap<String,Value>();
+		stack.push(newMap);
 	}
-
-	/**
-	 * Discard the innermost local scope from this table.
-	 */
-	public void exit() {
-		scopes.pop();
+	
+	// Exit a scope
+	public void exit(){
+		stack.pop();
 	}
-
-	/**
-	 * Add a binding from an id to a value in the innermost local scope. If
-	 * there was a previous binding for the id in this scope, it is returned.
-	 * 
-	 * @param id
-	 *            the name to be bound
-	 * @param value
-	 *            the corresponding value bound to the name
-	 * @return the previous bound value, or null if there was none
-	 */
-	public T bind(String id, T value) {
-		Map<String, T> local = scopes.peek();
-		return local.put(id, value);
+	
+	// Add a binding to the current scope
+	public void add(String name, Value value){
+		Map<String,Value> currentScope = stack.pop();
+		currentScope.put(name, value);
+		stack.add(currentScope);
 	}
-
-	/**
-	 * Return the first binding found for the given id, starting from the most
-	 * local scope and working outwards.
-	 * 
-	 * @param id
-	 *            the name to be searched
-	 * @return the corresponding value, or null if none found
-	 */
-	public T lookup(String id) {
-		for (int i = scopes.size() - 1; i >= 0; --i) {
-			Map<String, T> scope = scopes.get(i);
-			if (scope.containsKey(id)) {
-				return scope.get(id);
+	
+	// Find a binding: Check current scope, if not, check next scope down.
+	public Value search(String name) throws InterpreterException{
+		Stack<Map<String,Value>> copy = stack;
+		Map<String,Value> currentScope = copy.pop();
+		while(!copy.empty()){
+			if(currentScope.get(name) != null){
+				return currentScope.get(name);
+			} else {
+				currentScope = copy.pop();
 			}
+		} 
+		if(copy.empty()){
+			throw new InterpreterException("Symbol " + name + " not declared.");
+		}
+		return null;
+	}
+	
+	// update a symbol by the name
+	// TODO it's searching and updating a Copy
+	// TODO check type
+	// TODO make sure you change the intcell, not replace
+	public Value update(String name, Value value) throws InterpreterException{
+		Stack<Map<String,Value>> copy = stack;
+		Map<String,Value> currentScope = copy.pop();
+		while(!copy.empty()){
+			if(currentScope.get(name) != null){
+				if(currentScope.get(name) instanceof IntValue){
+					throw new InterpreterException("Symbol " + name + " is a const.");
+				}
+				currentScope.put(name, value);
+				return currentScope.get(name);
+			} else {
+				currentScope = copy.pop();
+			}
+		} 
+		if(copy.empty()){
+			throw new InterpreterException("Symbol " + name + " not declared.");
 		}
 		return null;
 	}
