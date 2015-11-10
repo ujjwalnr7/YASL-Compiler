@@ -1,6 +1,6 @@
 package csc426.ast;
 
-import csc426.parser.Position;
+import csc426.parser.*;
 
 public final class IdExpr extends Expr {
 	public final String id;

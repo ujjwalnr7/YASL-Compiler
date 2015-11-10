@@ -10,10 +10,13 @@ public class IntCell implements Value {
 	public void set(int num){
 		val = num;
 	}
+	public void set(String string)throws InterpreterException {
+		throw new InterpreterException("Attempted to use a number as a boolean");
+	}
 	public int asInt() throws InterpreterException {
 		return val;
 	}
 	public boolean asBool() throws InterpreterException {
-		throw new InterpreterException("Attempt to use a number as a boolean");
+		throw new InterpreterException("Attempted to use a number as a boolean");
 	}
 }

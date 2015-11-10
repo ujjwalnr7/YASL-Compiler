@@ -1,6 +1,6 @@
 package csc426.ast;
 
-import csc426.parser.Position;
+import csc426.parser.*;
 
 public final class StringItem extends Item {
 	public final String message;
@@ -17,5 +17,10 @@ public final class StringItem extends Item {
 
 	public String render(String indent) {
 		return indent + "StringItem \"" + message + "\"\n";
+	}
+	
+	@Override
+	public String type(){
+		return "string";
 	}
 }

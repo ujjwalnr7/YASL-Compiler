@@ -8,13 +8,11 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.util.Scanner;
 
-import csc426.ast.Program;
-import csc426.parser.ErrorLog;
-import csc426.parser.Lexer;
-import csc426.parser.Lookahead;
-import csc426.parser.Parser;
+import csc426.ast.*;
+import csc426.parser.*;
+import csc426.interpreter.*;
 
-public class Project3 {
+public class Project4 {
 	public static void main(String[] args) {
 		Scanner input = new Scanner(System.in);
 		PrintStream output = System.out;
@@ -22,8 +20,10 @@ public class Project3 {
 
 		File file = null;
 		if (args.length < 1) {
-			output.print("Source file: ");
-			file = new File(input.nextLine());
+			//output.print("Source file: ");
+			// file = new File(input.nextLine());
+			
+			file = new File("demo4.yasl");
 		} else {
 			file = new File(args[0]);
 		}
@@ -37,10 +37,11 @@ public class Project3 {
 			Parser parser = new Parser(lookahead);
 
 			Program program = parser.parseProgram();
-
-			String result = program.render("");
-
-			output.print(result);
+			
+			Interpreter interpret = new Interpreter(input, output);
+			
+			interpret.run(program);
+			
 		} catch (IOException e) {
 			log.add(e.getMessage());
 		} finally {

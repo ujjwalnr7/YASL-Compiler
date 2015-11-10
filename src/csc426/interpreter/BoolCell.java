@@ -10,6 +10,14 @@ public class BoolCell implements Value {
 	public void set(boolean Bool){
 		bool_val = Bool;
 	}
+	
+	public void set(int whatever) throws InterpreterException {
+		throw new InterpreterException("Attempt to store an int to a bool");
+	}
+	
+	public void set(String string) throws InterpreterException {
+		throw new InterpreterException("Attempt to use an int to a bool");
+	}
 	public boolean asBool() throws InterpreterException {
 		return bool_val;
 	}

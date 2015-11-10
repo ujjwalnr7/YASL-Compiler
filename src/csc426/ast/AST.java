@@ -1,6 +1,6 @@
 package csc426.ast;
 
-import csc426.parser.Position;
+import csc426.parser.*;
 
 /**
  * Base class of AST nodes. Keeps track of a position.

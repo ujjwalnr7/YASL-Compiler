@@ -1,13 +1,10 @@
 package util;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import csc426.interpreter.IntValue;
-import csc426.interpreter.InterpreterException;
-import csc426.interpreter.Value;
+import csc426.interpreter.*;
 
 public class SymbolTable {
 	Stack<Map<String,Value>> stack;
@@ -30,6 +27,7 @@ public class SymbolTable {
 	
 	// Add a binding to the current scope
 	public void add(String name, Value value){
+		
 		Map<String,Value> currentScope = stack.pop();
 		currentScope.put(name, value);
 		stack.add(currentScope);
@@ -37,42 +35,56 @@ public class SymbolTable {
 	
 	// Find a binding: Check current scope, if not, check next scope down.
 	public Value search(String name) throws InterpreterException{
-		Stack<Map<String,Value>> copy = stack;
+
+		
+		Stack<Map<String,Value>> copy = (Stack<Map<String,Value>>)stack.clone();
+		if(copy.empty()){
+			throw new InterpreterException("Table is empty.");
+		}
 		Map<String,Value> currentScope = copy.pop();
-		while(!copy.empty()){
-			if(currentScope.get(name) != null){
+		do{
+			if(currentScope.containsKey(name)){
 				return currentScope.get(name);
 			} else {
 				currentScope = copy.pop();
 			}
-		} 
-		if(copy.empty()){
-			throw new InterpreterException("Symbol " + name + " not declared.");
-		}
-		return null;
+		} while (!copy.empty());
+		throw new InterpreterException("Symbol " + name + " not found in search.");
 	}
 	
-	// update a symbol by the name
-	// TODO it's searching and updating a Copy
-	// TODO check type
-	// TODO make sure you change the intcell, not replace
 	public Value update(String name, Value value) throws InterpreterException{
-		Stack<Map<String,Value>> copy = stack;
-		Map<String,Value> currentScope = copy.pop();
-		while(!copy.empty()){
-			if(currentScope.get(name) != null){
+
+
+		Stack<Map<String,Value>> popped = new Stack<Map<String,Value>>();
+		Map<String,Value> currentScope;
+		while (!stack.empty()) {
+			currentScope = stack.pop();
+			popped.add(currentScope);
+			if(currentScope.containsKey(name)){
 				if(currentScope.get(name) instanceof IntValue){
 					throw new InterpreterException("Symbol " + name + " is a const.");
 				}
 				currentScope.put(name, value);
 				return currentScope.get(name);
-			} else {
-				currentScope = copy.pop();
 			}
-		} 
-		if(copy.empty()){
-			throw new InterpreterException("Symbol " + name + " not declared.");
 		}
-		return null;
+		
+		while(!popped.empty()){
+			stack.add(popped.pop());
+		}
+		
+		throw new InterpreterException("Symbol " + name + " not found in update.");
+	}
+	
+	public void printTable(){
+		Stack<Map<String,Value>> copy = (Stack<Map<String,Value>>)stack.clone();
+		if (!copy.empty()){
+			Map<String,Value> currentScope = copy.pop();
+			System.out.print("{");
+			for (String key : currentScope.keySet()) {
+			    System.out.print(key + " ");
+			}
+			System.out.println("} ");
+		}
 	}
 }
