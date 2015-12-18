@@ -18,14 +18,7 @@ public class Project5 {
 		PrintWriter fileout = new PrintWriter("output.yasm", "UTF-8");
 
 		File file = null;
-		if (args.length < 1) {
-			output.print("Source file: ");
-			
-			output.println("test5.yasl");
-			file = new File("test5.yasl");
-		} else {
-			file = new File(args[0]);
-		}
+		file = new File(args[0]);
 
 		Reader in = null;
 		try {
